@@ -1,20 +1,21 @@
 # Business Card Scanner App
 
-A web application that allows users to take photos of business cards and convert them into digital contacts using OpenAI's GPT-4o vision capabilities.
+A web application that allows users to take photos of business cards and convert them into digital contacts using OpenAI's GPT-4o vision capabilities with Structured Outputs.
 
 ## Features
 
 - Capture photos of business cards on mobile or desktop devices
 - Upload existing images of business cards
-- Extract contact information using GPT-4o
+- Extract contact information using GPT-4o with reliable schema validation via Structured Outputs
 - Generate downloadable vCard files for phone contacts
 - Mobile-responsive design works on both iOS and Android devices
+- Enhanced error handling and user feedback
 
 ## Technologies Used
 
 - **Frontend**: HTML, CSS, JavaScript (Vanilla)
 - **Backend**: Node.js with Express
-- **Image Processing**: OpenAI GPT-4o with vision capabilities
+- **Image Processing**: OpenAI GPT-4o with vision capabilities and Structured Outputs
 - **File Handling**: Multer for image uploads
 
 ## Setup and Installation
@@ -59,11 +60,25 @@ businesscard/
 └── README.md            # Project documentation
 ```
 
+## Implementation Details
+
+### OpenAI Structured Outputs
+
+This application uses OpenAI's Structured Outputs feature to ensure consistent, reliable data extraction from business cards. Structured Outputs enforces a JSON schema that guarantees the model will always return data in the expected format, making the application more robust.
+
+Key benefits:
+- Reliable type safety: The response always follows our defined schema
+- Consistent field formatting: All contact fields are properly structured
+- Better error handling: Clear identification of refusals and processing issues
+
+The schema includes fields for name, title, company, contact information, and social media profiles - all essential data found on typical business cards.
+
 ## Notes
 
 - This application uses OpenAI's GPT-4o model, which will incur API usage costs based on the number and size of images processed.
 - Processing time may vary depending on OpenAI API response times.
 - For best results, ensure business cards are well-lit and clearly visible in photos.
+- If a card is missing certain information, those fields will be omitted from the result and vCard.
 
 ## License
 

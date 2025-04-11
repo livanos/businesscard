@@ -19,8 +19,30 @@ app.use(express.json());
 // API endpoint to process business card image
 app.post('/api/process-card', upload.single('image'), async (req, res) => {
     try {
+        // Check if an image was uploaded
         if (!req.file) {
-            return res.status(400).json({ error: 'No image file uploaded' });
+            return res.status(400).json({ 
+                error: 'No image file uploaded',
+                details: 'Please upload a business card image'
+            });
+        }
+
+        // Check file size (limit to 5MB to avoid unnecessary large uploads)
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+        if (req.file.size > MAX_FILE_SIZE) {
+            return res.status(413).json({
+                error: 'Image file too large',
+                details: 'Please upload an image smaller than 5MB'
+            });
+        }
+
+        // Check file type
+        const validMimeTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+        if (!validMimeTypes.includes(req.file.mimetype)) {
+            return res.status(415).json({
+                error: 'Invalid file type',
+                details: 'Please upload a valid image file (JPEG, PNG, GIF, or WebP)'
+            });
         }
 
         const imageBuffer = req.file.buffer;
@@ -32,7 +54,22 @@ app.post('/api/process-card', upload.single('image'), async (req, res) => {
         return res.json(result);
     } catch (error) {
         console.error('Error processing business card:', error);
-        return res.status(500).json({ error: 'Failed to process business card', details: error.message });
+        
+        // Determine appropriate status code based on error type
+        let statusCode = 500;
+        
+        if (error.message.includes('API key') || error.message.includes('Authentication')) {
+            statusCode = 401; // Unauthorized
+        } else if (error.message.includes('rate limit')) {
+            statusCode = 429; // Too Many Requests
+        } else if (error.message.includes('violates usage policies')) {
+            statusCode = 422; // Unprocessable Entity
+        }
+        
+        return res.status(statusCode).json({ 
+            error: 'Failed to process business card', 
+            details: error.message 
+        });
     }
 });
 

@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to process business card');
+                throw new Error(errorData.error || errorData.details || 'Failed to process business card');
             }
 
             const data = await response.json();
@@ -89,11 +89,50 @@ document.addEventListener('DOMContentLoaded', () => {
             // Display results
             displayResults(contactData);
         } catch (error) {
-            alert(`Error: ${error.message}`);
+            // Create and display a better error message UI instead of an alert
+            showErrorMessage(error.message);
             console.error('Error:', error);
         } finally {
             loading.style.display = 'none';
+            scanButton.disabled = false;
         }
+    }
+    
+    // Display a user-friendly error message
+    function showErrorMessage(message) {
+        // Check if error container already exists, if not create it
+        let errorContainer = document.getElementById('error-container');
+        if (!errorContainer) {
+            errorContainer = document.createElement('div');
+            errorContainer.id = 'error-container';
+            errorContainer.className = 'card error-container';
+            document.querySelector('.container').insertBefore(
+                errorContainer, 
+                document.getElementById('result-container')
+            );
+        }
+        
+        // Add error message content
+        errorContainer.innerHTML = `
+            <div class="error-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <h3>Processing Error</h3>
+            <p>${message}</p>
+            <button id="dismiss-error" class="button">Dismiss</button>
+        `;
+        
+        // Show the error container
+        errorContainer.style.display = 'block';
+        
+        // Add event listener to dismiss button
+        document.getElementById('dismiss-error').addEventListener('click', () => {
+            errorContainer.style.display = 'none';
+        });
     }
 
     // Display contact information
@@ -194,6 +233,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Hide results
         resultContainer.style.display = 'none';
+        
+        // Hide any error messages
+        const errorContainer = document.getElementById('error-container');
+        if (errorContainer) {
+            errorContainer.style.display = 'none';
+        }
         
         // Reset data
         selectedFile = null;
